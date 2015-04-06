@@ -1,10 +1,9 @@
-//============================================================================
-// Name        : parking.cpp
-// Author      : Justin Bennett
-// Version     : 1
-// Copyright   : This belongs to justin
-// Description : Parking simulation
-//============================================================================
+/*
+ * test.cpp
+ *
+ *  Created on: Apr 5, 2015
+ *      Author: hideo
+ */
 
 #include <stdio.h>
 #include <regex.h>
