@@ -30,27 +30,58 @@
 #include <sys/wait.h>
 #include <cstdint>
 #include <sstream>
+#include <errno.h>
+#include <semaphore.h>
 
+
+#define BUFFER_SIZE 10
 #define N 5
+#define C 3
+#define A 3
+#define S 2
+#define P 20
+
 
 void *worker_thread(void * arg);
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
+
+	spot parkingSpots[S];
+
+	pthread_mutex_t mutex;
+
+	sem_t full;
+	sem_t empty;
 
     pthread_t       tid0;
     pthread_t       tid1;
     pthread_attr_t  attr;
-    int             i;
+    int i;
 
     pthread_attr_init(&attr);
 
     pthread_t my_thread[N];
+    pthread_mutex_t   mymutex[N];
+
+    /* Create the full semaphore and initialize to 0 */
+      sem_init(&full, 0, 0);
+
+
+      /* Create the empty semaphore and initialize to BUFFER_SIZE */
+      sem_init(&empty, 0, BUFFER_SIZE);
+
+
+
+
     long id;
 
+
+
+
+
     for(id = 1; id <= N; id++) {
-    	int ret = pthread_create(&my_thread[id], NULL, &worker_thread, (void*)id);
+    	int ret = pthread_create(&my_thread[id], NULL, &parkCar, (void*)id);
     	if(ret != 0) {
     		printf("Error: pthread_create() failed\n");
     		exit(EXIT_FAILURE);
@@ -60,13 +91,29 @@ main(int argc, char *argv[])
 }
 
 
+void *parkCar(void * arg){
+
+	 printf("Car thread #%ld\n", (long)arg);
+
+	 //car enters parking lot
 
 
+	 //display arrival time and spots available
 
-void *worker_thread(void * arg){
 
-	 printf("This is worker_thread #%ld\n", (long)arg);
+	 //car checks to see if there is parking available
 
+
+	 	 //if parking available park for P time
+
+	 	 	 	 //display spot obtained and time waited
+
+
+	 	 //else wait one and try again
+	 	 	 //increment waiting time
+
+
+	 //after parking time up exit the parking lot
 	 pthread_exit(NULL);
 
 
@@ -78,3 +125,11 @@ void *worker_thread(void * arg){
 
 
 
+void lotStatus(){
+
+
+
+
+
+
+}
