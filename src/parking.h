@@ -12,9 +12,17 @@ struct spot{
 
 	bool occupied;
 
+};
+
+struct vehicle{
+
+	int carNum;
+	int timeArrived;
+	int timeWaited;
 
 
 };
+
 
 void *parkCar(void * arg);
 
