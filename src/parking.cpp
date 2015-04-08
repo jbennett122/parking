@@ -48,19 +48,11 @@ int main(int argc, char *argv[])
 
 
 	pthread_t carID[N];
-	pthread_mutex_t mutex;
-	pthread_mutex_t   mymutex[N];
-	sem_t full;
-	sem_t empty;
 
 	 time_t now;
 	 struct tm elapsed;
 	 double seconds;
 
-
-    pthread_attr_t  attr;
-    int i;
-    int C,A,S,P;
     pthread_attr_init(&attr);
 
     /* Create the full semaphore and initialize to 0 */
@@ -69,11 +61,7 @@ int main(int argc, char *argv[])
 
       /* Create the empty semaphore and initialize to BUFFER_SIZE */
       sem_init(&empty, 0, BUFFER_SIZE);
-
-      int car_thread;
-      long id;
-
-      if(argc=3){
+      if(argc==3){
       	C= atoi(argv[1]);
       	A = atoi(argv[2]);
       	S= atoi(argv[3]);
@@ -93,36 +81,26 @@ int main(int argc, char *argv[])
     	  P = 20;
     	  cout<<"Using Default Values:\n"<<C<<" Cars, Rand Arrival time: "<<A<<" seconds\n"<<
     			  S<<" Spaces, Random Parking Time: "<<P<<endl;
-
-
-
       }
 
 
-      spot parkingSpots[S];
+      for (i = 1; i <= S; i++) {
+             pthread_mutex_init(&pSpots[i], NULL);
+        }
+
+
+      parkingSpots[S];
       vehicle car;
-/*
-      time(&now);
-      elapsed = *localtime(&now);
 
 
-      elapsed.tm_hour = 0; elapsed.tm_min = 0; elapsed.tm_sec = 0;
-      elapsed.tm_mon = 0;  elapsed.tm_mday = 1;
-*/
+      for(i = 1; i <= C; i++) {
 
-
-      printTime();
-
-      for(i = 1; i <= C+1; i++) {
-    	  printTime();
-    	cout<<i<<endl;
-
-    	//seconds = difftime(now,mktime(&elapsed));
-    //	cout<<seconds<<endl;
-
-
+    	//cout<<i<<endl;
 
     	int car_thread = pthread_create(&carID[i], NULL, &parkCar, (void*)i);
+
+
+    	cout<<"Car Thread "<<car_thread<<endl;
 
     	sleep(1);
     	/*if(car != 0) {
@@ -138,13 +116,31 @@ void *parkCar(void * arg){
 
 	 printf("Car thread #%d\n", (long)arg);
 
-	 //car enters parking lot
 
 
-	 //display arrival time and spots available
+	 //car enters parking lot display arrival time and spots available
+	 r+=getRand(A);
+
+	 cout<<"C"<<(long)arg<<" Arrived after "<<r<<" seconds"<<endl;
+
 
 
 	 //car checks to see if there is parking available
+int p;
+	  sem_wait(&empty);
+
+	 pthread_mutex_lock(&pSpots[p]);
+
+
+
+	 parkTime=getRand(P);
+	 cout<<"Time parked"<<parkTime<<endl;
+	 parkingSpots[i]
+
+	 pthread_mutex_unlock(&pSpots[i]);   //release the mutex lock
+
+
+	        sem_post(&full);
 
 
 	 	 //if parking available park for P time
@@ -189,4 +185,12 @@ void printTime(){
 
   printf ("%.f seconds since new year in the current timezone.\n", seconds);
 
+}
+
+
+int getRand(int n) {
+    int             RVal;
+    RVal = (rand() % (n));
+    if (RVal == 0) RVal++;
+    return (RVal);
 }

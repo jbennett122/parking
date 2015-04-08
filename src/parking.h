@@ -8,11 +8,7 @@
 #ifndef PARKING_H_
 #define PARKING_H_
 
-struct spot{
 
-	bool occupied;
-
-};
 
 struct vehicle{
 
@@ -23,6 +19,28 @@ struct vehicle{
 
 };
 
+struct spot{
+
+	bool occupied;
+	vehicle *v;
+};
+
+pthread_mutex_t   pSpots[2];
+
+sem_t full;
+sem_t empty;
+
+pthread_attr_t  attr;
+spot parkingSpots[2];
+
+int i,r,parkTime;
+int C,A,S,P;
+int car_thread;
+long id;
+
+
+
+int getRand(int N);
 
 void *parkCar(void * arg);
 
