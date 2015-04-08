@@ -39,6 +39,7 @@ int i,r,parkTime;
 int C,A,S,P;
 int car_thread;
 long id;
+int carCount=0;
 
 
 

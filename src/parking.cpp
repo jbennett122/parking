@@ -28,7 +28,7 @@
 #include <semaphore.h>
 #include "parking.h"
 
-#define BUFFER_SIZE 10
+
 #define N 5
 
 /*
@@ -49,18 +49,11 @@ int main(int argc, char *argv[])
 
 	pthread_t carID[N];
 
-	 time_t now;
-	 struct tm elapsed;
-	 double seconds;
 
-    pthread_attr_init(&attr);
+     sem_init(&full, 0, 0);
+     sem_init(&empty, 0,P);
+     pthread_attr_init(&attr);
 
-    /* Create the full semaphore and initialize to 0 */
-      sem_init(&full, 0, 0);
-
-
-      /* Create the empty semaphore and initialize to BUFFER_SIZE */
-      sem_init(&empty, 0, BUFFER_SIZE);
       if(argc==3){
       	C= atoi(argv[1]);
       	A = atoi(argv[2]);
@@ -70,11 +63,7 @@ int main(int argc, char *argv[])
       	cout<<"Using User Submitted Values:\n"<<C<<" Cars, Rand Arrival time: "<<A<<" seconds\n"<<
       	    			  S<<" Spaces, Random Parking Time: "<<P<<endl;
 
-
-
-      	cout<<C<<" "<<A<<" "<<S<<" "<<P<<endl;
-
-      }else{
+        }else{
     	  C= 3;
     	  A = 3;
     	  S= 2;
@@ -82,8 +71,7 @@ int main(int argc, char *argv[])
     	  cout<<"Using Default Values:\n"<<C<<" Cars, Rand Arrival time: "<<A<<" seconds\n"<<
     			  S<<" Spaces, Random Parking Time: "<<P<<endl;
       }
-
-
+      //lock for spots
       for (i = 1; i <= S; i++) {
              pthread_mutex_init(&pSpots[i], NULL);
         }
@@ -100,7 +88,7 @@ int main(int argc, char *argv[])
     	int car_thread = pthread_create(&carID[i], NULL, &parkCar, (void*)i);
 
 
-    	cout<<"Car Thread "<<car_thread<<endl;
+    	//cout<<"Car Thread "<<car_thread<<endl;
 
     	sleep(1);
     	/*if(car != 0) {
@@ -111,12 +99,24 @@ int main(int argc, char *argv[])
     pthread_exit(NULL);
 }
 
+void addCar(int i){
+
+carCount++;
+	;
+}
+
+void removeCar(int i){
+carCount--;
+	;
+}
+
+
 
 void *parkCar(void * arg){
 
 	 printf("Car thread #%d\n", (long)arg);
 
-
+int n;
 
 	 //car enters parking lot display arrival time and spots available
 	 r+=getRand(A);
@@ -127,22 +127,34 @@ void *parkCar(void * arg){
 
 	 //car checks to see if there is parking available
 int p;
+
+while(carCount!=P){
 	  sem_wait(&empty);
 
 	 pthread_mutex_lock(&pSpots[p]);
 
 
 
-	 parkTime=getRand(P);
-	 cout<<"Time parked"<<parkTime<<endl;
-	 parkingSpots[i]
+	 addCar(n);
 
-	 pthread_mutex_unlock(&pSpots[i]);   //release the mutex lock
+	 parkTime=getRand(P);
+	 	 cout<<"Time parked"<<parkTime<<endl;
+
+	 	 //add history to parking spot
+
+
+
+	 	 sleep(parkTime);
+
+
+
+	 removeCar(n);
+	 pthread_mutex_unlock(&pSpots[p]);   //release the mutex lock
 
 
 	        sem_post(&full);
 
-
+}
 	 	 //if parking available park for P time
 
 	 	 	 	 //display spot obtained and time waited
