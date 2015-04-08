@@ -25,6 +25,8 @@ struct spot{
 	vehicle *v;
 };
 
+
+
 pthread_mutex_t   pSpots[2];
 
 sem_t full;
