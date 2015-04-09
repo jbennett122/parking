@@ -7,7 +7,7 @@
 
 #ifndef PARKING_H_
 #define PARKING_H_
-
+#include <vector>
 
 
 struct vehicle{
@@ -22,7 +22,10 @@ struct vehicle{
 struct spot{
 
 	bool occupied;
-	vehicle *v;
+
+
+	//records vehicle history in spot
+	std::vector<vehicle> vhistory;
 };
 
 
@@ -40,11 +43,13 @@ int C,A,S,P;
 int car_thread;
 long id;
 int carCount=0;
-
+int carInLot=0;
 
 
 int getRand(int N);
 
 void *parkCar(void * arg);
+
+void addCar(int car,int timeA,int timeW );
 
 #endif /* PARKING_H_ */

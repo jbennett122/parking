@@ -27,7 +27,7 @@
 #include <errno.h>
 #include <semaphore.h>
 #include "parking.h"
-
+#include <vector>
 
 #define N 5
 
@@ -50,8 +50,8 @@ int main(int argc, char *argv[])
 	pthread_t carID[N];
 
 
-     sem_init(&full, 0, 0);
-     sem_init(&empty, 0,P);
+     sem_init(&full, 0, P);
+    // sem_init(&empty, 0,P);
      pthread_attr_init(&attr);
 
       if(argc==3){
@@ -99,15 +99,41 @@ int main(int argc, char *argv[])
     pthread_exit(NULL);
 }
 
-void addCar(int i){
+int addCar(int car,int timeA,int timeW ){
 
-carCount++;
-	;
-}
+	vehicle v;
 
-void removeCar(int i){
-carCount--;
-	;
+	v.carNum=car;
+	v.timeArrived=timeA;
+	v.timeWaited=timeW;
+
+
+
+	for(int i=0; i<S;i++)
+	{
+		//find the empty spot
+		if(parkingSpots[i].occupied!=true){
+			//then add car number to spot history
+
+			parkingSpots[i].vhistory.push_back(v);
+
+			//set occupied to true
+			parkingSpots[i].occupied=true;
+
+			return i;
+
+
+		}
+
+
+	}
+
+	}
+
+void removeCar(int car,int spotNum){
+
+
+	parkingSpots[spotNum].occupied=false;
 }
 
 
@@ -116,26 +142,29 @@ void *parkCar(void * arg){
 
 	 printf("Car thread #%d\n", (long)arg);
 
-int n;
+int car=(long)arg;
+int timeA,timeW,SN;
 
 	 //car enters parking lot display arrival time and spots available
 	 r+=getRand(A);
 
-	 cout<<"C"<<(long)arg<<" Arrived after "<<r<<" seconds"<<endl;
+	 cout<<"C"<<car<<" Arrived after "<<r<<" seconds"<<endl;
 
-
-
+	 timeA=r;
+	 timeW=0;
 	 //car checks to see if there is parking available
 int p;
 
-while(carCount!=P){
-	  sem_wait(&empty);
-
-	 pthread_mutex_lock(&pSpots[p]);
+while(carCount!=C){
 
 
 
-	 addCar(n);
+
+
+
+	  sem_wait(&full);
+
+	 SN=addCar(car,timeA,timeW);
 
 	 parkTime=getRand(P);
 	 	 cout<<"Time parked"<<parkTime<<endl;
@@ -148,8 +177,8 @@ while(carCount!=P){
 
 
 
-	 removeCar(n);
-	 pthread_mutex_unlock(&pSpots[p]);   //release the mutex lock
+	 removeCar(car,SN);
+
 
 
 	        sem_post(&full);
@@ -164,22 +193,30 @@ while(carCount!=P){
 	 	 	 //increment waiting time
 
 
+carCount++;
 	 //after parking time up exit the parking lot
 	 pthread_exit(NULL);
 
 
 
-
-
-
 }
-
 
 
 void lotStatus(int argc, char *argv[]){
 
 
 }
+
+int getRand(int n) {
+    int             RVal;
+    RVal = (rand() % (n));
+    if (RVal == 0) RVal++;
+    return (RVal);
+}
+
+
+
+
 
 void printTime(){
   time_t now;
@@ -197,12 +234,4 @@ void printTime(){
 
   printf ("%.f seconds since new year in the current timezone.\n", seconds);
 
-}
-
-
-int getRand(int n) {
-    int             RVal;
-    RVal = (rand() % (n));
-    if (RVal == 0) RVal++;
-    return (RVal);
 }
