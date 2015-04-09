@@ -28,6 +28,7 @@
 #include <semaphore.h>
 #include "parking.h"
 #include <vector>
+#include <iomanip>
 
 #define N 5
 
@@ -79,6 +80,13 @@ int main(int argc, char *argv[])
       vehicle car;
 
 
+      initSpot();
+
+      time (&rawtime);
+      beginTime =  time(&rawtime);
+
+
+
       for(i = 1; i <= C; i++) {
 
     	//cout<<i<<endl;
@@ -88,8 +96,11 @@ int main(int argc, char *argv[])
       	  	  }
 
       sem_wait(&ending);
-      cout<<"hi"<<endl;
 
+
+
+
+      lotStatus();
 
 
 
@@ -101,16 +112,16 @@ int main(int argc, char *argv[])
 
 }
 
-int addCar(int car,int timeA,int timeW ){
+int addCar(int car,int timeA,int timeW,int timeP ){
 
 	vehicle v;
 
 	v.carNum=car;
 	v.timeArrived=timeA;
 	v.timeWaited=timeW;
-
-
-
+	v.timeParked=timeP;
+int spot;
+//cout<<"S"<<S<<endl;
 	for(int i=0; i<S;i++)
 	{
 		//find the empty spot
@@ -118,19 +129,21 @@ int addCar(int car,int timeA,int timeW ){
 			//then add car number to spot history
 
 			parkingSpots[i].vhistory.push_back(v);
+			v.pSpt=i;
+			carVector.push_back(v);
 
 			//set occupied to true
 			parkingSpots[i].occupied=true;
 
-
+			spot=i;
+			break;
 
 		}
 
-		break;
 
 
 	}
-return i;
+return spot;
 	}
 
 void removeCar(int car,int spotNum){
@@ -139,14 +152,24 @@ void removeCar(int car,int spotNum){
 	parkingSpots[spotNum].occupied=false;
 }
 
+void initSpot(){
 
+
+	for(int i=0;i<S;i++){
+
+		parkingSpots[i].occupied=false;
+
+
+	}
+
+}
 
 void *parkCar(void * arg){
 
 	// printf("Car thread #%d\n", (long)arg);
 
 int car=(long)arg;
-int timeA,timeW,SN;
+int timeA,timeW,SN,timeP;
 int value;
 
 
@@ -159,7 +182,7 @@ timeW=0;
 		 cout<<">>> C"<<car<<" Arrived after "<<r<<" seconds...Parking is FULL\n"<<endl;
 
 	 while(carInLot==S){
-
+		 cout<<"car waiting"<<endl;
 	 		timeW++;
 	 		sleep(1);
 	 	}
@@ -169,8 +192,6 @@ timeW=0;
 		 cout<<">>> C"<<car<<" Arrived after "<<r<<" seconds\n"<<endl;
 
 	 }
-
-
 
 
 //cout<<"CarCount "<<carCount<<" C "<<C<<endl;
@@ -185,11 +206,12 @@ timeW=0;
 	sem_getvalue(&full, &value);
 	 //   printf("The value of the semaphors during is %d\n", value);
 
+	 parkTime=getRand(P);
 
-	 SN=addCar(car,timeA,timeW);
+	 SN=addCar(car,timeA,timeW,parkTime);
 	 carInLot++;
 
-	 parkTime=getRand(P);
+
 
 	 cout<<">>> C"<<car<<" parked in S"<<SN<<" after waiting "<<timeW<<" seconds\n"<<endl;
 
@@ -205,8 +227,6 @@ timeW=0;
 	 //cout<<"CIL "<<carInLot<<endl;
 	 sem_post(&full);
 
-	 sleep(4);
-
 	    	sem_getvalue(&full, &value);
 	   // 	    printf("The value of the semaphors is after %d\n", value);
 
@@ -214,7 +234,7 @@ timeW=0;
 if((carCount==C)&&(!spotCheck())){
 
 	sem_post(&ending);
-	 cout<<"end"<<endl;
+	// cout<<"end"<<endl;
 }
 
 	 //after parking time up exit the parking lot
@@ -240,8 +260,56 @@ bool spotCheck(){
 
 }
 
+void lotStatus(){
 
-void lotStatus(int argc, char *argv[]){
+	double seconds;
+	//time (&rawtime);
+	endTime = time(&rawtime);
+
+	seconds = difftime(endTime,beginTime);
+
+//cout<<seconds<<endl;
+
+	cout<<"... PARKING LOT CLOSED ...  Number of Parked Cars "<<C<<endl;
+
+
+
+	cout<<"\n\n=================== FINAL STATE ===========================\n\n"<<endl;
+
+
+
+	cout<<"Total Time from Open to Close: "<<seconds<<"seconds"<<endl;
+
+
+
+	cout<<"Parking Spaces:"<<endl;
+
+	cout<<"---------------"<<endl;
+
+	cout<<setw(6)<<"    Car   ParkingTime"<<endl;
+	for(int i=0;i<2;i++){
+
+		for(int j=0;j<parkingSpots[i].vhistory.size();j++){
+		cout<<"S"<<i<<"   "<<"C"<<parkingSpots[i].vhistory[j].carNum<<"  "
+				<<" "<<parkingSpots[i].vhistory[j].timeParked<<endl;
+
+		}
+	}
+
+	cout<<"\nCars:\n-----\n"<<endl;
+
+
+
+	      cout<<setw(12)<<"Space"<<setw(12)<<"ArrivalTime"<<setw(12)<<"WaitingTime"<<setw(6)<<"ParkingTime"<<endl;
+
+
+for(i =0;i<carVector.size();i++){
+
+	cout<<"C"<<carVector[i].carNum<<": "<<setw(6)<<carVector[i].pSpt<<setw(10)<<carVector[i].timeArrived<<setw(12)<<carVector[i].timeWaited<<setw(12)<<
+				carVector[i].timeParked<<endl;
+
+
+}
 
 
 }
