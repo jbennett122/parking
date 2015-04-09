@@ -41,7 +41,6 @@
 using namespace std;
 
 
-void printTime();
 
 int main(int argc, char *argv[])
 {
@@ -50,11 +49,10 @@ int main(int argc, char *argv[])
 	pthread_t carID[N];
 
 
-     sem_init(&full, 0, P);
-    // sem_init(&empty, 0,P);
-     pthread_attr_init(&attr);
 
-      if(argc==3){
+    // sem_init(&empty, 0,P);
+
+      if(argc==5){
       	C= atoi(argv[1]);
       	A = atoi(argv[2]);
       	S= atoi(argv[3]);
@@ -71,11 +69,11 @@ int main(int argc, char *argv[])
     	  cout<<"Using Default Values:\n"<<C<<" Cars, Rand Arrival time: "<<A<<" seconds\n"<<
     			  S<<" Spaces, Random Parking Time: "<<P<<endl;
       }
-      //lock for spots
-      for (i = 1; i <= S; i++) {
-             pthread_mutex_init(&pSpots[i], NULL);
-        }
 
+      pthread_attr_init(&attr);
+
+      sem_init(&full, 0, S);
+      sem_init(&ending, 0, 0);
 
       parkingSpots[S];
       vehicle car;
@@ -87,16 +85,20 @@ int main(int argc, char *argv[])
 
     	int car_thread = pthread_create(&carID[i], NULL, &parkCar, (void*)i);
 
+      	  	  }
 
-    	//cout<<"Car Thread "<<car_thread<<endl;
+      sem_wait(&ending);
+      cout<<"hi"<<endl;
 
-    	sleep(1);
-    	/*if(car != 0) {
-    		printf("Error: pthread_create() failed\n");
-    		exit(EXIT_FAILURE);
-    	}*/
-    }
+
+
+
     pthread_exit(NULL);
+
+
+
+
+
 }
 
 int addCar(int car,int timeA,int timeW ){
@@ -120,14 +122,15 @@ int addCar(int car,int timeA,int timeW ){
 			//set occupied to true
 			parkingSpots[i].occupied=true;
 
-			return i;
 
 
 		}
 
+		break;
+
 
 	}
-
+return i;
 	}
 
 void removeCar(int car,int spotNum){
@@ -140,64 +143,100 @@ void removeCar(int car,int spotNum){
 
 void *parkCar(void * arg){
 
-	 printf("Car thread #%d\n", (long)arg);
+	// printf("Car thread #%d\n", (long)arg);
 
 int car=(long)arg;
 int timeA,timeW,SN;
+int value;
 
+
+timeW=0;
 	 //car enters parking lot display arrival time and spots available
 	 r+=getRand(A);
-
-	 cout<<"C"<<car<<" Arrived after "<<r<<" seconds"<<endl;
-
 	 timeA=r;
-	 timeW=0;
-	 //car checks to see if there is parking available
-int p;
 
-while(carCount!=C){
+	 if(carInLot==S){
+		 cout<<">>> C"<<car<<" Arrived after "<<r<<" seconds...Parking is FULL\n"<<endl;
+
+	 while(carInLot==S){
+
+	 		timeW++;
+	 		sleep(1);
+	 	}
+	 }
+	 else {
+
+		 cout<<">>> C"<<car<<" Arrived after "<<r<<" seconds\n"<<endl;
+
+	 }
 
 
 
 
+//cout<<"CarCount "<<carCount<<" C "<<C<<endl;
+
+		sem_getvalue(&full, &value);
+		//    printf("The value of the semaphors before is %d\n", value);
 
 
+	//	 cout<<"CIL "<<carInLot<<endl;
 	  sem_wait(&full);
 
+	sem_getvalue(&full, &value);
+	 //   printf("The value of the semaphors during is %d\n", value);
+
+
 	 SN=addCar(car,timeA,timeW);
+	 carInLot++;
 
 	 parkTime=getRand(P);
-	 	 cout<<"Time parked"<<parkTime<<endl;
 
-	 	 //add history to parking spot
+	 cout<<">>> C"<<car<<" parked in S"<<SN<<" after waiting "<<timeW<<" seconds\n"<<endl;
 
+	 sleep(parkTime);
 
-
-	 	 sleep(parkTime);
-
-
+	 cout<<"<<< C"<<car<<" left S"<<SN<<" after "<<parkTime<<" seconds\n"<<endl;
+	// cout<<"CIL "<<carInLot<<endl;
+	 carCount++;
 
 	 removeCar(car,SN);
 
+	 carInLot--;
+	 //cout<<"CIL "<<carInLot<<endl;
+	 sem_post(&full);
+
+	 sleep(4);
+
+	    	sem_getvalue(&full, &value);
+	   // 	    printf("The value of the semaphors is after %d\n", value);
 
 
-	        sem_post(&full);
+if((carCount==C)&&(!spotCheck())){
 
+	sem_post(&ending);
+	 cout<<"end"<<endl;
 }
-	 	 //if parking available park for P time
 
-	 	 	 	 //display spot obtained and time waited
-
-
-	 	 //else wait one and try again
-	 	 	 //increment waiting time
-
-
-carCount++;
 	 //after parking time up exit the parking lot
 	 pthread_exit(NULL);
 
 
+}
+
+bool spotCheck(){
+
+	bool empty= true;
+
+	for(int i=0;i<S;i++){
+
+		if(parkingSpots[i].occupied==true){
+			empty=false;
+			break;
+
+		}
+
+	}
+	return empty;
 
 }
 
@@ -215,23 +254,3 @@ int getRand(int n) {
 }
 
 
-
-
-
-void printTime(){
-  time_t now;
-  struct tm newyear;
-  double seconds;
-
-  time(&now);  /* get current time; same as: now = time(NULL)  */
-
-  newyear = *localtime(&now);
-
-  newyear.tm_hour = 0; newyear.tm_min = 0; newyear.tm_sec = 0;
-  newyear.tm_mon = 0;  newyear.tm_mday = 1;
-
-  seconds = difftime(now,mktime(&newyear));
-
-  printf ("%.f seconds since new year in the current timezone.\n", seconds);
-
-}
